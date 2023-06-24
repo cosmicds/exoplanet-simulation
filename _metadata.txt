@@ -1,0 +1,21 @@
+generated-with: Easy Java/Javascript Simulations, version 6.0_beta, build 180819. Visit http://www.um.es/fem/Ejs
+title: 
+logo-image: 
+author: Mario Belloni - Davidson College
+copyright: 
+preferred-width: 800
+preferred-height: 600
+author-image: 
+source: exoplanet_transits.ejss
+main-script: 
+main-simulation: exoplanet_transits_Simulation.xhtml
+available-languages: 
+html-contents: exoplanet_transits_Contents.xhtml
+html-main: exoplanet_transits.xhtml
+page-title: Exoplanet Detection: Transit Method
+page-index: ExoplanetTransit/ExoplanetTransit.html
+page-title: Simulation
+page-index: exoplanet_transits_Simulation.xhtml
+resource: ExoplanetTransit/graph.jpg
+resource: ExoplanetTransit/transit.jpg
+resource: ExoplanetTransit/ExoplanetTransit.html

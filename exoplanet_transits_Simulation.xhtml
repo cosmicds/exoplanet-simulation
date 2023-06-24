@@ -1,0 +1,1140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+  <head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link rel="stylesheet"  type="text/css" href="_ejs_library/css/ejss.css" />
+    <script src="_ejs_library/scripts/common_script.js"></script>
+    <script src="_ejs_library/scripts/textresizedetector.js"></script>
+    <script src="_ejs_library/ejsS.v1.min.js"></script>
+<script type="text/javascript"><!--//--><![CDATA[//><!--
+/* _inputParameters: an object with different values for the model parameters */
+function exoplanet_transits(_topFrame,_libraryPath,_codebasePath, _inputParameters) {
+  var _model = EJSS_CORE.createAnimationLMS();
+  var _view;
+  var _isPlaying = false;
+  var _isPaused = true;
+  var _isMobile = (navigator===undefined) ? false : navigator.userAgent.match(/iPhone|iPad|iPod|Android|BlackBerry|Opera Mini|IEMobile/i);
+
+var _stringProperties = {};
+  var _tools = {
+    showInputDialog : EJSS_INTERFACE.BoxPanel.showInputDialog,
+    showOkDialog : EJSS_INTERFACE.BoxPanel.showOkDialog,
+    showOkCancelDialog : EJSS_INTERFACE.BoxPanel.showOkCancelDialog,
+    downloadText: EJSS_TOOLS.File.downloadText,
+    uploadText: function(action) { EJSS_TOOLS.File.uploadText(_model,action); } 
+  };
+
+  function _play()  { _isPaused = false; _isPlaying = true;  _model.play();  }
+  function _pause() { _isPaused = true;  _isPlaying = false; _model.pause(); }
+  function _step()  { _pause();  _model.step(); }
+  function _reset() { _model.reset();  _isPaused = _model.isPaused(); _isPlaying = _model.isPlaying(); }
+  _model._play  = _play;
+  _model._pause = _pause;
+  _model._step  = _step;
+  _model._reset = _reset;
+  function _update() { _model.update(); }
+  function _initialize() { _model.initialize(); }
+  function _setFPS(_fps) { _model.setFPS(_fps); }
+  function _setDelay(_delay) { _model.setDelay(_delay); }
+  function _setStepsPerDisplay(_spd) { _model.setStepsPerDisplay(_spd); }
+  function _setUpdateView(_updateView) { _model.setUpdateView(_updateView); }
+  function _setAutoplay(_auto) { _model.setAutoplay(_auto); }
+  function _println(_message) { console.log(_message); }
+
+  function _breakAfterThisPage() { _model.setShouldBreak(true); }
+
+  function _resetSolvers() { if (_model.resetSolvers) _model.resetSolvers(); }
+
+  function _saveText(name,type,content) { if (_model.saveText) _model.saveText(name,type,content); }
+
+  function _saveState(name) { if (_model.saveState) _model.saveState(name); }
+
+  function _saveImage(name,panelname) { if (_model.saveImage) _model.saveImage(name,panelname); }
+
+  function _readState(url,type) { if (_model.readState) _model.readState(url,type); }
+
+  function _readText(url,type,varname) { if (_model.readText) _model.readText(url,type,varname); }
+
+  function _getStringProperty(propertyName) {
+    var _value = _stringProperties[propertyName];
+    if (_value===undefined) return propertyName;
+    else return _value;
+  }
+  var __pagesEnabled = [];
+  function _setPageEnabled(pageName,enabled) { __pagesEnabled[pageName] = enabled; }
+
+  var t; // EjsS Model.Variables.Dynamic Variables.t
+  var dt; // EjsS Model.Variables.Dynamic Variables.dt
+  var phi; // EjsS Model.Variables.Dynamic Variables.phi
+  var phi2; // EjsS Model.Variables.Dynamic Variables.phi2
+  var r; // EjsS Model.Variables.Dynamic Variables.r
+  var x; // EjsS Model.Variables.Dynamic Variables.x
+  var y; // EjsS Model.Variables.Dynamic Variables.y
+  var z; // EjsS Model.Variables.Dynamic Variables.z
+
+  var a; // EjsS Model.Variables.Static Variables.a
+  var e; // EjsS Model.Variables.Static Variables.e
+  var Rs; // EjsS Model.Variables.Static Variables.Rs
+  var Re; // EjsS Model.Variables.Static Variables.Re
+  var b; // EjsS Model.Variables.Static Variables.b
+  var Rstar; // EjsS Model.Variables.Static Variables.Rstar
+
+  var area; // EjsS Model.Variables.Calculation Variables.area
+  var overlap; // EjsS Model.Variables.Calculation Variables.overlap
+  var d; // EjsS Model.Variables.Calculation Variables.d
+  var Y; // EjsS Model.Variables.Calculation Variables.Y
+  var reflection; // EjsS Model.Variables.Calculation Variables.reflection
+  var albedo; // EjsS Model.Variables.Calculation Variables.albedo
+  var occultation; // EjsS Model.Variables.Calculation Variables.occultation
+  var Y2; // EjsS Model.Variables.Calculation Variables.Y2
+
+  var angle; // EjsS Model.Variables.View Variables.angle
+  var angle2; // EjsS Model.Variables.View Variables.angle2
+  var noise; // EjsS Model.Variables.View Variables.noise
+  var showMe; // EjsS Model.Variables.View Variables.showMe
+  var max; // EjsS Model.Variables.View Variables.max
+  var min; // EjsS Model.Variables.View Variables.min
+  var norm; // EjsS Model.Variables.View Variables.norm
+  var azimuth; // EjsS Model.Variables.View Variables.azimuth
+  var speed; // EjsS Model.Variables.View Variables.speed
+  var speed2; // EjsS Model.Variables.View Variables.speed2
+
+  var _privateOdesList;
+  var _ODEi_evolution1;
+  var userEvents1=[];
+
+  _model.getOdes = function() { return [_ODEi_evolution1]; };
+
+  _model.removeEvents = function(){
+    userEvents1=[];
+  };
+
+  function _serialize() { return _model.serialize(); }
+
+  _model._userSerialize = function() {
+    return {
+      t : t,
+      dt : dt,
+      phi : phi,
+      phi2 : phi2,
+      r : r,
+      x : x,
+      y : y,
+      z : z,
+      a : a,
+      e : e,
+      Rs : Rs,
+      Re : Re,
+      b : b,
+      Rstar : Rstar,
+      area : area,
+      overlap : overlap,
+      d : d,
+      Y : Y,
+      reflection : reflection,
+      albedo : albedo,
+      occultation : occultation,
+      Y2 : Y2,
+      angle : angle,
+      angle2 : angle2,
+      noise : noise,
+      showMe : showMe,
+      max : max,
+      min : min,
+      norm : norm,
+      azimuth : azimuth,
+      speed : speed,
+      speed2 : speed2
+    };
+  };
+
+  function _serializePublic() { return _model.serializePublic(); }
+
+  _model._userSerializePublic = function() {
+    return {
+      t : t,
+      dt : dt,
+      phi : phi,
+      phi2 : phi2,
+      r : r,
+      x : x,
+      y : y,
+      z : z,
+      a : a,
+      e : e,
+      Rs : Rs,
+      Re : Re,
+      b : b,
+      Rstar : Rstar,
+      area : area,
+      overlap : overlap,
+      d : d,
+      Y : Y,
+      reflection : reflection,
+      albedo : albedo,
+      occultation : occultation,
+      Y2 : Y2,
+      angle : angle,
+      angle2 : angle2,
+      noise : noise,
+      showMe : showMe,
+      max : max,
+      min : min,
+      norm : norm,
+      azimuth : azimuth,
+      speed : speed,
+      speed2 : speed2
+    };
+  };
+
+  _model._readParameters = function(json) {
+    if(typeof json.t != "undefined") t = json.t;
+    if(typeof json.dt != "undefined") dt = json.dt;
+    if(typeof json.phi != "undefined") phi = json.phi;
+    if(typeof json.phi2 != "undefined") phi2 = json.phi2;
+    if(typeof json.r != "undefined") r = json.r;
+    if(typeof json.x != "undefined") x = json.x;
+    if(typeof json.y != "undefined") y = json.y;
+    if(typeof json.z != "undefined") z = json.z;
+    if(typeof json.a != "undefined") a = json.a;
+    if(typeof json.e != "undefined") e = json.e;
+    if(typeof json.Rs != "undefined") Rs = json.Rs;
+    if(typeof json.Re != "undefined") Re = json.Re;
+    if(typeof json.b != "undefined") b = json.b;
+    if(typeof json.Rstar != "undefined") Rstar = json.Rstar;
+    if(typeof json.area != "undefined") area = json.area;
+    if(typeof json.overlap != "undefined") overlap = json.overlap;
+    if(typeof json.d != "undefined") d = json.d;
+    if(typeof json.Y != "undefined") Y = json.Y;
+    if(typeof json.reflection != "undefined") reflection = json.reflection;
+    if(typeof json.albedo != "undefined") albedo = json.albedo;
+    if(typeof json.occultation != "undefined") occultation = json.occultation;
+    if(typeof json.Y2 != "undefined") Y2 = json.Y2;
+    if(typeof json.angle != "undefined") angle = json.angle;
+    if(typeof json.angle2 != "undefined") angle2 = json.angle2;
+    if(typeof json.noise != "undefined") noise = json.noise;
+    if(typeof json.showMe != "undefined") showMe = json.showMe;
+    if(typeof json.max != "undefined") max = json.max;
+    if(typeof json.min != "undefined") min = json.min;
+    if(typeof json.norm != "undefined") norm = json.norm;
+    if(typeof json.azimuth != "undefined") azimuth = json.azimuth;
+    if(typeof json.speed != "undefined") speed = json.speed;
+    if(typeof json.speed2 != "undefined") speed2 = json.speed2;
+  };
+
+  _model._readParametersPublic = function(json) {
+    if(typeof json.t != "undefined") t = json.t;
+    if(typeof json.dt != "undefined") dt = json.dt;
+    if(typeof json.phi != "undefined") phi = json.phi;
+    if(typeof json.phi2 != "undefined") phi2 = json.phi2;
+    if(typeof json.r != "undefined") r = json.r;
+    if(typeof json.x != "undefined") x = json.x;
+    if(typeof json.y != "undefined") y = json.y;
+    if(typeof json.z != "undefined") z = json.z;
+    if(typeof json.a != "undefined") a = json.a;
+    if(typeof json.e != "undefined") e = json.e;
+    if(typeof json.Rs != "undefined") Rs = json.Rs;
+    if(typeof json.Re != "undefined") Re = json.Re;
+    if(typeof json.b != "undefined") b = json.b;
+    if(typeof json.Rstar != "undefined") Rstar = json.Rstar;
+    if(typeof json.area != "undefined") area = json.area;
+    if(typeof json.overlap != "undefined") overlap = json.overlap;
+    if(typeof json.d != "undefined") d = json.d;
+    if(typeof json.Y != "undefined") Y = json.Y;
+    if(typeof json.reflection != "undefined") reflection = json.reflection;
+    if(typeof json.albedo != "undefined") albedo = json.albedo;
+    if(typeof json.occultation != "undefined") occultation = json.occultation;
+    if(typeof json.Y2 != "undefined") Y2 = json.Y2;
+    if(typeof json.angle != "undefined") angle = json.angle;
+    if(typeof json.angle2 != "undefined") angle2 = json.angle2;
+    if(typeof json.noise != "undefined") noise = json.noise;
+    if(typeof json.showMe != "undefined") showMe = json.showMe;
+    if(typeof json.max != "undefined") max = json.max;
+    if(typeof json.min != "undefined") min = json.min;
+    if(typeof json.norm != "undefined") norm = json.norm;
+    if(typeof json.azimuth != "undefined") azimuth = json.azimuth;
+    if(typeof json.speed != "undefined") speed = json.speed;
+    if(typeof json.speed2 != "undefined") speed2 = json.speed2;
+  };
+
+  function _unserializePublic(json) { return _model.unserializePublic(json); }
+
+  _model._userUnserializePublic = function(json) {
+    _model._readParametersPublic(json);
+   _resetSolvers();
+   _model.update();
+  };
+
+  function _unserialize(json) { return _model.unserialize(json); }
+
+  _model._userUnserialize = function(json) {
+    _model._readParameters(json);
+   _resetSolvers();
+   _model.update();
+  };
+
+  _model.addToReset(function() {
+    __pagesEnabled["Init Page"] = true;
+    __pagesEnabled["ODEphiEvolution"] = false;
+    __pagesEnabled["Error handling code"] = true;
+    __pagesEnabled["codePhiEvolution"] = true;
+    __pagesEnabled["UpdateOrbitVariables"] = true;
+    __pagesEnabled["ComputeTransitOverlap"] = true;
+    __pagesEnabled["ComputeOccultationOverlap"] = true;
+    __pagesEnabled["Compute Total Signal"] = true;
+  });
+
+  _model.addToReset(function() {
+    t = 0.0; // EjsS Model.Variables.Dynamic Variables.t
+    dt = 0.001; // EjsS Model.Variables.Dynamic Variables.dt
+    phi = -Math.PI/2.0; // EjsS Model.Variables.Dynamic Variables.phi
+    phi2 = phi-Math.PI; // EjsS Model.Variables.Dynamic Variables.phi2
+    r = 0.0; // EjsS Model.Variables.Dynamic Variables.r
+    x = 0.0; // EjsS Model.Variables.Dynamic Variables.x
+    y = 0.0; // EjsS Model.Variables.Dynamic Variables.y
+    z = 0.0; // EjsS Model.Variables.Dynamic Variables.z
+  });
+
+  _model.addToReset(function() {
+    a = 1.5; // EjsS Model.Variables.Static Variables.a
+    e = 0.0; // EjsS Model.Variables.Static Variables.e
+    Rs = 9.728; // EjsS Model.Variables.Static Variables.Rs
+    Re = 1.0; // EjsS Model.Variables.Static Variables.Re
+    b = 0.5; // EjsS Model.Variables.Static Variables.b
+    Rstar = 1.0; // EjsS Model.Variables.Static Variables.Rstar
+  });
+
+  _model.addToReset(function() {
+    area = 0.0; // EjsS Model.Variables.Calculation Variables.area
+    overlap = 0.0; // EjsS Model.Variables.Calculation Variables.overlap
+    d = 0.0; // EjsS Model.Variables.Calculation Variables.d
+    Y = 0.0; // EjsS Model.Variables.Calculation Variables.Y
+    reflection = 0.0; // EjsS Model.Variables.Calculation Variables.reflection
+    albedo = 0.0; // EjsS Model.Variables.Calculation Variables.albedo
+    occultation = 0.0; // EjsS Model.Variables.Calculation Variables.occultation
+    Y2 = 0.0; // EjsS Model.Variables.Calculation Variables.Y2
+  });
+
+  _model.addToReset(function() {
+    angle = 0.0; // EjsS Model.Variables.View Variables.angle
+    angle2 = 0.0; // EjsS Model.Variables.View Variables.angle2
+    noise = 0.5263; // EjsS Model.Variables.View Variables.noise
+    showMe = false; // EjsS Model.Variables.View Variables.showMe
+    speed = 1; // EjsS Model.Variables.View Variables.speed
+    speed2 = 5; // EjsS Model.Variables.View Variables.speed2
+  });
+
+  if (_inputParameters) {
+    _inputParameters = _model.parseInputParameters(_inputParameters);
+    if (_inputParameters) _model.addToReset(function() { _model._readParameters(_inputParameters); });
+  }
+
+  _model.addToReset(function() {
+    _privateOdesList=[];
+    _ODEi_evolution1 = _ODE_evolution1();
+    _privateOdesList.push(_ODEi_evolution1);
+  });
+
+  _model.addToReset(function() {
+    _model.setAutoplay(false);
+    _model.setPauseOnPageExit(true);
+    _model.setFPS(20);
+    _model.setStepsPerDisplay(speed2);
+  });
+
+  _model.addToInitialization(function() {
+    if (!__pagesEnabled["Init Page"]) return;
+    t=0;   // > Initialization.Init Page:1
+    Rs = 9.728*Rstar;  // > Initialization.Init Page:2
+    azimuth = 0.0;  // > Initialization.Init Page:3
+    speed2=5*speed;  // > Initialization.Init Page:4
+    angle=angle2*Math.PI/180.0;  // > Initialization.Init Page:5
+  });
+
+  _model.addToInitialization(function() {
+    _initializeSolvers();
+  });
+
+  _model.addToEvolution(function() {
+    if (!__pagesEnabled["ODEphiEvolution"]) return;
+    _ODEi_evolution1.step();
+  });
+
+  _model.addToEvolution(function() {
+    if (!__pagesEnabled["codePhiEvolution"]) return;
+    t+= dt;  // > Evolution.codePhiEvolution:1
+    phi=-Math.PI/2.0+2.0*Math.PI*t;  // > Evolution.codePhiEvolution:2
+  });
+
+  _model.addToFixedRelations(function() { _isPaused = _model.isPaused(); _isPlaying = _model.isPlaying(); });
+
+  _model.addToFixedRelations(function() {
+    if (!__pagesEnabled["UpdateOrbitVariables"]) return;
+    speed2=5*speed;  // > FixedRelations.UpdateOrbitVariables:1
+    //update dark side angle  // > FixedRelations.UpdateOrbitVariables:2
+    phi2=phi+Math.PI;  // > FixedRelations.UpdateOrbitVariables:3
+    //make sure that size of star is scaled correctly  // > FixedRelations.UpdateOrbitVariables:4
+    Rs = Rstar*9.728;  // > FixedRelations.UpdateOrbitVariables:5
+    //compute radial coordinate for planet (Kepler)  // > FixedRelations.UpdateOrbitVariables:6
+    r = a*(1-e*e)/(1+e*Math.cos(phi));  // > FixedRelations.UpdateOrbitVariables:7
+    //compute x and y coordinates for planet in its orbital plane  // > FixedRelations.UpdateOrbitVariables:8
+    x = r*Math.cos(phi);  // > FixedRelations.UpdateOrbitVariables:9
+    y = r*Math.sin(phi);  // > FixedRelations.UpdateOrbitVariables:10
+    z = 0;  // > FixedRelations.UpdateOrbitVariables:11
+  });
+
+  _model.addToFixedRelations(function() {
+    if (!__pagesEnabled["ComputeTransitOverlap"]) return;
+    //compute overlap area  // > FixedRelations.ComputeTransitOverlap:1
+    angle=angle2*Math.PI/180.0;  // > FixedRelations.ComputeTransitOverlap:2
+    //transit cannot occur when planet behind star  // > FixedRelations.ComputeTransitOverlap:3
+    if (x < 0)       // > FixedRelations.ComputeTransitOverlap:4
+    {  // > FixedRelations.ComputeTransitOverlap:5
+      overlap = 0;   // > FixedRelations.ComputeTransitOverlap:6
+    }  // > FixedRelations.ComputeTransitOverlap:7
+    //planet completely outside star's disk [scale+perspective adjustments too]  // > FixedRelations.ComputeTransitOverlap:8
+    else if (Math.pow(y*y + r*r*Math.sin(angle)*Math.sin(angle), 0.5) > (Rs + Re)/20)   // > FixedRelations.ComputeTransitOverlap:9
+    {  // > FixedRelations.ComputeTransitOverlap:10
+    //planet still too far away to have an overlap  // > FixedRelations.ComputeTransitOverlap:11
+      overlap = 0;  // > FixedRelations.ComputeTransitOverlap:12
+    }  // > FixedRelations.ComputeTransitOverlap:13
+    //planet completely inside star's disk [scale+perspective adjustments too]  // > FixedRelations.ComputeTransitOverlap:14
+    else if (Math.pow(y*y + r*r*Math.sin(angle)*Math.sin(angle), 0.5) < (Rs - Re)/20)   // > FixedRelations.ComputeTransitOverlap:15
+    {  // > FixedRelations.ComputeTransitOverlap:16
+    //second and third contact gives complete overlap  // > FixedRelations.ComputeTransitOverlap:17
+      overlap = Math.PI * Re * Re;           // > FixedRelations.ComputeTransitOverlap:18
+    }  // > FixedRelations.ComputeTransitOverlap:19
+    //planet not completely in or out of star's disk  // > FixedRelations.ComputeTransitOverlap:20
+    else   // > FixedRelations.ComputeTransitOverlap:21
+    {      // > FixedRelations.ComputeTransitOverlap:22
+    //calculate y position of the planet  // > FixedRelations.ComputeTransitOverlap:23
+    Y = Math.pow(y*y + r*r*Math.sin(angle)*Math.sin(angle), 0.5)*20; //scale Y to Re  // > FixedRelations.ComputeTransitOverlap:24
+      //first and fourth contact gives partial overlap  // > FixedRelations.ComputeTransitOverlap:25
+      overlap = (Re*Re*Math.acos((Y*Y-Rs*Rs+Re*Re)/(2*Y*Re))+Rs*Rs*Math.acos((Y*Y+Rs*Rs-Re*Re)/(2*Y*Rs))-0.5*Math.pow((-Y+Re+Rs)*(Y+Re-Rs)*(Y-Re+Rs)*(Y+Re+Rs),0.5));  // > FixedRelations.ComputeTransitOverlap:26
+    }  // > FixedRelations.ComputeTransitOverlap:27
+  });
+
+  _model.addToFixedRelations(function() {
+    if (!__pagesEnabled["ComputeOccultationOverlap"]) return;
+    //now calculate occultation of exoplanet  // > FixedRelations.ComputeOccultationOverlap:1
+    //compute occultation area  // > FixedRelations.ComputeOccultationOverlap:2
+    //transit cannot occur when planet in front of star  // > FixedRelations.ComputeOccultationOverlap:3
+    if (x > 0)       // > FixedRelations.ComputeOccultationOverlap:4
+    {  // > FixedRelations.ComputeOccultationOverlap:5
+      //planet not occulted by star  // > FixedRelations.ComputeOccultationOverlap:6
+      occultation = 0;  // > FixedRelations.ComputeOccultationOverlap:7
+    }  // > FixedRelations.ComputeOccultationOverlap:8
+    //planet still too far away  // > FixedRelations.ComputeOccultationOverlap:9
+    else if (Math.pow(y*y + r*r*Math.sin(angle)*Math.sin(angle), 0.5) > (Rs + Re)/20)   // > FixedRelations.ComputeOccultationOverlap:10
+    {  // > FixedRelations.ComputeOccultationOverlap:11
+      //planet not occulted by star  // > FixedRelations.ComputeOccultationOverlap:12
+      occultation = 0;  // > FixedRelations.ComputeOccultationOverlap:13
+    }  // > FixedRelations.ComputeOccultationOverlap:14
+    //second and third contact  // > FixedRelations.ComputeOccultationOverlap:15
+    else if (Math.pow(y*y + r*r*Math.sin(angle)*Math.sin(angle), 0.5) < (Rs - Re)/20)   // > FixedRelations.ComputeOccultationOverlap:16
+    {  // > FixedRelations.ComputeOccultationOverlap:17
+      //planet completely occulted by star  // > FixedRelations.ComputeOccultationOverlap:18
+      occultation = 1;  // > FixedRelations.ComputeOccultationOverlap:19
+    }  // > FixedRelations.ComputeOccultationOverlap:20
+    //first and fourth contact  // > FixedRelations.ComputeOccultationOverlap:21
+    else   // > FixedRelations.ComputeOccultationOverlap:22
+    {      // > FixedRelations.ComputeOccultationOverlap:23
+    //calculate y position of the planet  // > FixedRelations.ComputeOccultationOverlap:24
+    Y2 = Math.pow(y*y + r*r*Math.sin(angle)*Math.sin(angle), 0.5)*20; //scale y to Re and Rs  // > FixedRelations.ComputeOccultationOverlap:25
+      //planet not completely occulted by star's disk  // > FixedRelations.ComputeOccultationOverlap:26
+      occultation = (1/(Math.PI*Re*Re))*(Re*Re*Math.acos((Y2*Y2-Rs*Rs+Re*Re)/(2*Y2*Re))+Rs*Rs*Math.acos((Y2*Y2+Rs*Rs-Re*Re)/(2*Y2*Rs))-0.5*Math.pow((-Y2+Re+Rs)*(Y2+Re-Rs)*(Y2-Re+Rs)*(Y2+Re+Rs),0.5));  // > FixedRelations.ComputeOccultationOverlap:27
+    }  // > FixedRelations.ComputeOccultationOverlap:28
+    //assume exoplanet is at 1 AU [[2092.5 RJ = 1 AU and RJ = 1 unit and Rs = 10 units]]  // > FixedRelations.ComputeOccultationOverlap:29
+    //calculate the reflection=albedo*area*(phaseCalculation)*(1-occultation)  // > FixedRelations.ComputeOccultationOverlap:30
+    reflection = albedo*Math.PI*Rs*Rs*(Re*Re/2092.5/2092.5/b/b)*(Math.sin(phi/2)*Math.sin(phi/2)*Math.cos(angle)*Math.cos(angle)+0.5*Math.sin(angle)*Math.sin(angle))*(1-occultation);  // > FixedRelations.ComputeOccultationOverlap:31
+  });
+
+  _model.addToFixedRelations(function() {
+    if (!__pagesEnabled["Compute Total Signal"]) return;
+    //total area is star area minus overlap plus reflection  // > FixedRelations.Compute Total Signal:1
+    //area of star seen by observer + reflection off exoplanet  // > FixedRelations.Compute Total Signal:2
+    area = Math.PI * Rs * Rs - overlap + reflection;  // > FixedRelations.Compute Total Signal:3
+    //use arbitrary units  // > FixedRelations.Compute Total Signal:4
+    norm = Math.PI*Rs*Rs;  // > FixedRelations.Compute Total Signal:5
+    //set graph max/min  // > FixedRelations.Compute Total Signal:6
+    max = (1.001*Math.PI*Rs*Rs+1.5*albedo*albedo*Math.PI*Rs*Rs*(Re*Re/2092.5/2092.5/b/b))/norm;  // > FixedRelations.Compute Total Signal:7
+    min = (Math.PI*Rs*Rs-1.05*(Math.PI*Re*Re))/norm;  // > FixedRelations.Compute Total Signal:8
+  });
+
+  _model.addToFixedRelations(function() { _isPaused = _model.isPaused(); _isPlaying = _model.isPlaying(); });
+
+  function _initializeSolvers() {
+    for (var i=0,n=_privateOdesList.length; i<n; i++) _privateOdesList[i].initializeSolver();
+  }
+
+  function _automaticResetSolvers() {
+    for (var i=0,n=_privateOdesList.length; i<n; i++) _privateOdesList[i].automaticResetSolver();
+  }
+
+  _model.resetSolvers = function() {
+    for (var i=0,n=_privateOdesList.length; i<n; i++) _privateOdesList[i].resetSolver();
+  };
+
+  _getODE = function (_odeName) {
+    if (_odeName=="ODEphiEvolution") return _ODEi_evolution1;
+    return null;
+  }
+
+  function _getEventSolver(_odeName) {
+    var ode = _getODE(_odeName);
+    if (ode===null) return null;
+    return ode.getEventSolver();
+  }
+
+  function _setSolverClass(_odeName, _engine) {
+    var ode = _getODE(_odeName);
+    if (ode===null) return;
+    if (!_engine.setODE) {
+      var classname = _engine.toLowerCase();
+      if      (classname.indexOf("boga")>=0)   _engine = EJSS_ODE_SOLVERS.bogackiShampine23;
+      else if (classname.indexOf("cash")>=0)   _engine = EJSS_ODE_SOLVERS.cashKarp45;
+      else if (classname.indexOf("dopri5")>=0) _engine = EJSS_ODE_SOLVERS.dopri5;
+      else if (classname.indexOf("dopri8")>=0) _engine = EJSS_ODE_SOLVERS.dopri853;
+      else if (classname.indexOf("richa")>=0)  _engine = EJSS_ODE_SOLVERS.eulerRichardson;
+      else if (classname.indexOf("euler")>=0)  _engine = EJSS_ODE_SOLVERS.euler;
+      else if (classname.indexOf("fehlberg87")>=0) _engine = EJSS_ODE_SOLVERS.fehlberg87;
+      else if (classname.indexOf("fehlberg8")>=0)  _engine = EJSS_ODE_SOLVERS.fehlberg8;
+      else if (classname.indexOf("radau")>=0)   _engine = EJSS_ODE_SOLVERS.radau5;
+      else if (classname.indexOf("runge")>=0)  _engine = EJSS_ODE_SOLVERS.rungeKutta4;
+      else if (classname.indexOf("rk4")>=0)    _engine = EJSS_ODE_SOLVERS.rungeKutta4;
+      else if (classname.indexOf("verlet")>=0) _engine = EJSS_ODE_SOLVERS.velocityVerlet;
+    }
+    if (_engine) ode.setSolverClass(_engine);
+  }
+
+  function _ODE_evolution1() {
+    var __odeSelf = {};
+    var __eventSolver;
+    var __solverClass = EJSS_ODE_SOLVERS.cashKarp45;
+    var __state=[];
+    var __mustInitialize=true;
+    var __isEnabled=true;
+    var __mustUserReinitialize=false;
+    var __mustReinitialize=true;
+
+
+    __odeSelf._getOdeVars = function (){ return["phi","t"]};
+
+    __odeSelf.setSolverClass = function(__aSolverClass) {
+      __solverClass = __aSolverClass;
+      __instantiateSolver();
+    };
+
+    function __instantiateSolver() {
+      __state=[];
+      __pushState();
+      __eventSolver = EJSS_ODE_SOLVERS.interpolatorEventSolver(__solverClass(),__odeSelf);
+      __mustInitialize = true;
+    }
+
+    __odeSelf.setEnabled = function(_enabled) { __isEnabled = _enabled; };
+
+    __odeSelf.getIndependentVariableValue = function() { return __eventSolver.getIndependentVariableValue(); };
+
+    __odeSelf.getInternalStepSize = function() { return __eventSolver.getInternalStepSize(); };
+
+    __odeSelf.isAccelerationIndependentOfVelocity = function() { return false; };
+
+    __odeSelf.initializeSolver = function() {
+      if (__arraysChanged()) { __instantiateSolver(); __odeSelf.initializeSolver(); return; }
+      __pushState();
+      __eventSolver.initialize(dt);
+      __eventSolver.setBestInterpolation(false);
+      __eventSolver.setMaximumInternalSteps(10000);
+      __eventSolver.removeAllEvents();
+      for(k in userEvents1){__eventSolver.addEvent(userEvents1[k]);}
+      __eventSolver.setEstimateFirstStep(false);
+      __eventSolver.setEnableExceptions(false);
+      __eventSolver.setTolerances(0.00001,0.00001);
+      __mustReinitialize = true;
+      __mustInitialize = false;
+    };
+
+    function __pushState() {
+      // Copy our variables to __state[] 
+        var __j=0;
+        var __n=0;
+        var __cIn=0;
+        if (__state[__cIn]!=phi) __mustReinitialize = true;
+        __state[__cIn++] = phi;
+        if (__state[__cIn]!=t) __mustReinitialize = true;
+        __state[__cIn++] = t;
+    }
+
+    function __arraysChanged () {
+      return false;
+    }
+
+    __odeSelf.getEventSolver = function() {
+      return __eventSolver;
+    };
+
+    __odeSelf.resetSolver = function() {
+      __mustUserReinitialize = true;
+    };
+
+    __odeSelf.automaticResetSolver = function() {
+      __mustReinitialize = true;
+    };
+
+    function __errorAction () {
+      // Make sure the solver is reinitialized;
+      __mustReinitialize = true;
+      var _errorCode = __eventSolver.getErrorCode();
+      if (__pagesEnabled["Error handling code"]) {
+        { // For any error: 
+        }
+      }
+    }
+
+    __odeSelf.step = function() { return __privateStep(false); };
+
+    __odeSelf.solverStep = function() { return __privateStep(true); };
+
+    function __privateStep(__takeMaximumStep) {
+      if (!__isEnabled) return 0;
+      if (dt===0) return 0;
+      if (__mustInitialize) __odeSelf.initializeSolver();
+      if (__arraysChanged()) { __instantiateSolver(); __odeSelf.initializeSolver(); }
+      __eventSolver.setStepSize(dt);
+      __eventSolver.setInternalStepSize(dt);
+      __eventSolver.setMaximumInternalSteps(10000);
+      __eventSolver.setTolerances(0.00001,0.00001);
+      __pushState();
+      if (__mustUserReinitialize) { 
+        __eventSolver.userReinitialize();
+        __mustUserReinitialize = false;
+        __mustReinitialize = false;
+        if (__eventSolver.getErrorCode()!=EJSS_ODE_SOLVERS.ERROR.NO_ERROR) __errorAction();
+      }
+      else if (__mustReinitialize) { 
+        __eventSolver.reinitialize();
+        __mustReinitialize = false;
+        if (__eventSolver.getErrorCode()!=EJSS_ODE_SOLVERS.ERROR.NO_ERROR) __errorAction();
+      }
+      var __stepTaken = __takeMaximumStep ? __eventSolver.maxStep() : __eventSolver.step();
+      // Extract our variables from __state
+        var __i=0;
+        var __cOut=0;
+        phi = __state[__cOut++];
+        t = __state[__cOut++];
+      // Check for error
+      if (__eventSolver.getErrorCode()!=EJSS_ODE_SOLVERS.ERROR.NO_ERROR) __errorAction();
+      return __stepTaken;
+    }
+
+    __odeSelf.getState = function() { return __state; };
+
+    __odeSelf.getRate = function(_aState,_aRate) {
+      // Extract our variables from _aState
+        var __i=0;
+        var __cOut=0;
+        var phi = _aState[__cOut++];
+        var t = _aState[__cOut++];
+      // Compute the rate
+        var __cRate=0;
+        _aRate[__cRate++] = 2.0*Math.PI*(1.0+e*Math.cos(phi))*(1+e*Math.cos(phi))/Math.pow(1.0*(1.0-e*e),1.5); // Rate for ODE: ODEphiEvolution:phi
+        _aRate[__cRate++] = 1; // independent variable
+        return _aRate;
+    }; //end of getRate
+
+    __odeSelf._addEvent = function(userCondition,userAction,eventType,eventMethod,maxIter,eventTolerance,endAtEvent){
+    var User_Event = function (userCondition,userAction,eventType,eventMethod,maxIter,eventTolerance,endAtEvent) {
+      var _eventSelf = {};
+
+      _eventSelf.getTypeOfEvent = function() { return eventType; };
+
+      _eventSelf.getRootFindingMethod = function() { return eventMethod; };
+
+      _eventSelf.getMaxIterations = function() { return maxIter; };
+
+      _eventSelf.getTolerance = function() { return eventTolerance; };
+
+      _eventSelf.evaluate = function(_aState) { 
+      // Extract our variables from _aState
+        var __i=0;
+        var __cOut=0;
+        var phi = _aState[__cOut++];
+        var t = _aState[__cOut++];
+      return eval(userCondition);
+      };
+
+      _eventSelf.action = function() { 
+      // Extract our variables from __state
+        var __i=0;
+        var __cOut=0;
+        phi = __state[__cOut++];
+        t = __state[__cOut++];
+        var _returnValue = __userDefinedAction();
+      // Copy our variables to __state[] 
+        var __j=0;
+        var __n=0;
+        var __cIn=0;
+        __state[__cIn++] = phi;
+        __state[__cIn++] = t;
+        return _returnValue;
+      };
+
+      function __userDefinedAction() {
+        if (undefined != functions) eval(functions.toString());
+        eval(userAction);
+        return endAtEvent;
+      }
+
+      return _eventSelf;
+    }; // End of event
+
+   userEvents1.push(User_Event(userCondition,userAction,eventType,eventMethod,maxIter,eventTolerance,endAtEvent));
+   }
+
+    __instantiateSolver();
+
+    return __odeSelf;
+  }
+
+  function _historic_phi(__time) {
+    var __index = 0;
+    return _ODEi_evolution1.getEventSolver().getStateHistory().interpolate(__time,__index);
+  }
+
+    _model._fontResized = function(iBase,iSize,iDelta) {
+      _view._fontResized(iBase,iSize,iDelta);
+  }; // end of _fontResized
+
+  function _getViews() {
+    var _viewsInfo = [];
+    var _counter = 0;
+    _viewsInfo[_counter++] = { name : "HtmlView Page", width : 800, height : 600 };
+    return _viewsInfo;
+  } // end of _getViews
+
+  function _selectView(_viewNumber) {
+    _view = null;
+    _view = new exoplanet_transits_View(_topFrame,_viewNumber,_libraryPath,_codebasePath);
+    var _view_super_reset = _view._reset;
+    _view._reset = function() {
+      _view_super_reset();
+      switch(_viewNumber) {
+        case -10 : break; // make Lint happy
+        default :
+        case 0:
+          _view.drawingPanel3D.linkProperty("CameraAltitude",  function() { return angle2; }, function(_v) { angle2 = _v; } ); // HtmlView Page linking property 'CameraAltitude' for element 'drawingPanel3D'
+          _view.drawingPanel3D.linkProperty("CameraAzimuth",  function() { return azimuth; }, function(_v) { azimuth = _v; } ); // HtmlView Page linking property 'CameraAzimuth' for element 'drawingPanel3D'
+          _view.sphere3D.linkProperty("Radius",  function() { return Rs/15; } ); // HtmlView Page linking property 'Radius' for element 'sphere3D'
+          _view.exoplanet3D.linkProperty("Radius",  function() { return Re/20; } ); // HtmlView Page linking property 'Radius' for element 'exoplanet3D'
+          _view.exoplanet3D.linkProperty("Transformation",  function() { return [[phi2,0,0,1]]; } ); // HtmlView Page linking property 'Transformation' for element 'exoplanet3D'
+          _view.exoplanet3D.linkProperty("X",  function() { return x; }, function(_v) { x = _v; } ); // HtmlView Page linking property 'X' for element 'exoplanet3D'
+          _view.exoplanet3D.linkProperty("Y",  function() { return y; }, function(_v) { y = _v; } ); // HtmlView Page linking property 'Y' for element 'exoplanet3D'
+          _view.exoplanet3D.linkProperty("Z",  function() { return z; }, function(_v) { z = _v; } ); // HtmlView Page linking property 'Z' for element 'exoplanet3D'
+          _view.exoplanetNight.linkProperty("Radius",  function() { return Re/20; } ); // HtmlView Page linking property 'Radius' for element 'exoplanetNight'
+          _view.exoplanetNight.linkProperty("Transformation",  function() { return [[phi,0,0,1]]; } ); // HtmlView Page linking property 'Transformation' for element 'exoplanetNight'
+          _view.exoplanetNight.linkProperty("X",  function() { return x; }, function(_v) { x = _v; } ); // HtmlView Page linking property 'X' for element 'exoplanetNight'
+          _view.exoplanetNight.linkProperty("Y",  function() { return y; }, function(_v) { y = _v; } ); // HtmlView Page linking property 'Y' for element 'exoplanetNight'
+          _view.exoplanetNight.linkProperty("Z",  function() { return z; }, function(_v) { z = _v; } ); // HtmlView Page linking property 'Z' for element 'exoplanetNight'
+          _view.trail3D.linkProperty("InputZ",  function() { return z; }, function(_v) { z = _v; } ); // HtmlView Page linking property 'InputZ' for element 'trail3D'
+          _view.trail3D.linkProperty("InputX",  function() { return x; }, function(_v) { x = _v; } ); // HtmlView Page linking property 'InputX' for element 'trail3D'
+          _view.trail3D.linkProperty("InputY",  function() { return y; }, function(_v) { y = _v; } ); // HtmlView Page linking property 'InputY' for element 'trail3D'
+          _view.runPauseButton.setAction("OffClick", _pause); // HtmlView Page setting action 'OffClick' for element 'runPauseButton'
+          _view.runPauseButton.linkProperty("State",  function() { return _isPaused; } ); // HtmlView Page linking property 'State' for element 'runPauseButton'
+          _view.runPauseButton.setAction("OnClick", _play); // HtmlView Page setting action 'OnClick' for element 'runPauseButton'
+          _view.stepButton.setAction("OnClick", _step); // HtmlView Page setting action 'OnClick' for element 'stepButton'
+          _view.resetButton.setAction("OnClick", _reset); // HtmlView Page setting action 'OnClick' for element 'resetButton'
+          _view.resetTraces.setAction("OnPress", _view._initialize); // HtmlView Page setting action 'OnPress' for element 'resetTraces'
+          _view.RstarSlider.linkProperty("Value",  function() { return Rstar; }, function(_v) { Rstar = _v; } ); // HtmlView Page linking property 'Value' for element 'RstarSlider'
+          _view.RstarSlider.setAction("OnChange", _view._update); // HtmlView Page setting action 'OnChange' for element 'RstarSlider'
+          _view.RstarField.linkProperty("Value",  function() { return Rstar; }, function(_v) { Rstar = _v; } ); // HtmlView Page linking property 'Value' for element 'RstarField'
+          _view.RplanetSlider.linkProperty("Value",  function() { return Re; }, function(_v) { Re = _v; } ); // HtmlView Page linking property 'Value' for element 'RplanetSlider'
+          _view.RplanetSlider.setAction("OnChange", _view._update); // HtmlView Page setting action 'OnChange' for element 'RplanetSlider'
+          _view.RplanetField.linkProperty("Value",  function() { return Re; }, function(_v) { Re = _v; } ); // HtmlView Page linking property 'Value' for element 'RplanetField'
+          _view.albedo.linkProperty("Value",  function() { return albedo; }, function(_v) { albedo = _v; } ); // HtmlView Page linking property 'Value' for element 'albedo'
+          _view.albedo.setAction("OnChange", _view._update); // HtmlView Page setting action 'OnChange' for element 'albedo'
+          _view.albedoField2.linkProperty("Value",  function() { return albedo; }, function(_v) { albedo = _v; } ); // HtmlView Page linking property 'Value' for element 'albedoField2'
+          _view.semiMajor.linkProperty("Value",  function() { return b; }, function(_v) { b = _v; } ); // HtmlView Page linking property 'Value' for element 'semiMajor'
+          _view.semiMajor.setAction("OnChange", _initialize); // HtmlView Page setting action 'OnChange' for element 'semiMajor'
+          _view.semiMajorField.linkProperty("Value",  function() { return b; }, function(_v) { b = _v; } ); // HtmlView Page linking property 'Value' for element 'semiMajorField'
+          _view.angle2.linkProperty("Value",  function() { return angle2; }, function(_v) { angle2 = _v; } ); // HtmlView Page linking property 'Value' for element 'angle2'
+          _view.angle2.setAction("OnChange", _view._update); // HtmlView Page setting action 'OnChange' for element 'angle2'
+          _view.angleField.linkProperty("Value",  function() { return angle2; }, function(_v) { angle2 = _v; } ); // HtmlView Page linking property 'Value' for element 'angleField'
+          _view.plot.linkProperty("InputX",  function() { return t*Math.pow(b,1.5)*365.25; } ); // HtmlView Page linking property 'InputX' for element 'plot'
+          _view.plot.linkProperty("InputY",  function() { return area/norm; } ); // HtmlView Page linking property 'InputY' for element 'plot'
+          break;
+      } // end of switch
+    }; // end of new reset
+
+    _model.setView(_view);
+    _model.reset();
+    _view._enableEPub();
+  } // end of _selectView
+
+  _model.setAutoplay(false);
+  _model.setFPS(20);
+  _model.setStepsPerDisplay(speed2);
+  _selectView(_model._autoSelectView(_getViews())); // this includes _model.reset()
+  return _model;
+}
+
+function exoplanet_transits_View (_topFrame,_viewNumber,_libraryPath,_codebasePath) {
+  var _view;
+  switch(_viewNumber) {
+    case -10 : break; // make Lint happy
+    default :
+    case 0: _view = exoplanet_transits_View_0 (_topFrame); break;
+  } // end of switch
+
+  if (_codebasePath) _view._setResourcePath(_codebasePath);
+
+  if (_libraryPath) _view._setLibraryPath(_libraryPath);
+
+  _view._addDescriptionPage('Exoplanet Detection: Transit Method','./ExoplanetTransit/ExoplanetTransit.html');
+
+  return _view;
+} // end of main function
+
+function exoplanet_transits_View_0 (_topFrame) {
+  var _view = EJSS_CORE.createView(_topFrame);
+
+  _view._reset = function() {
+    _view._clearAll();
+    _view._addElement(EJSS_INTERFACE.panel,"singleDrawing3DPanel", _view._topFrame) // EJsS HtmlView.HtmlView Page: declaration of element 'singleDrawing3DPanel'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.panel,"labelPanel", _view.singleDrawing3DPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'labelPanel'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.imageAndTextButton,"topLabel", _view.labelPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'topLabel'
+      .setProperty("Text","<h1>Exoplanet Detection: Transit Method</h1>") // EJsS HtmlView.HtmlView Page: setting property 'Text' for element 'topLabel'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.wrappedPanel,"wrappedPanel", _view.singleDrawing3DPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'wrappedPanel'
+      .setProperty("CSS",{ "display":"block"}) // EJsS HtmlView.HtmlView Page: setting property 'CSS' for element 'wrappedPanel'
+      ;
+
+    _view._addElement(EJSS_DRAWING3D.drawingPanel,"drawingPanel3D", _view.wrappedPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'drawingPanel3D'
+      .setProperty("Height",400) // EJsS HtmlView.HtmlView Page: setting property 'Height' for element 'drawingPanel3D'
+      .setProperty("Width",400) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'drawingPanel3D'
+      .setProperty("Draggable","NONE") // EJsS HtmlView.HtmlView Page: setting property 'Draggable' for element 'drawingPanel3D'
+      .setProperty("CameraZ",-0.01) // EJsS HtmlView.HtmlView Page: setting property 'CameraZ' for element 'drawingPanel3D'
+      .setProperty("CameraY",0.0) // EJsS HtmlView.HtmlView Page: setting property 'CameraY' for element 'drawingPanel3D'
+      .setProperty("CameraX",6.0) // EJsS HtmlView.HtmlView Page: setting property 'CameraX' for element 'drawingPanel3D'
+      .setProperty("Background","Black") // EJsS HtmlView.HtmlView Page: setting property 'Background' for element 'drawingPanel3D'
+      .setProperty("Projection",35) // EJsS HtmlView.HtmlView Page: setting property 'Projection' for element 'drawingPanel3D'
+      .setProperty("Enabled",true) // EJsS HtmlView.HtmlView Page: setting property 'Enabled' for element 'drawingPanel3D'
+      .setProperty("CameraFocusZ",0.0) // EJsS HtmlView.HtmlView Page: setting property 'CameraFocusZ' for element 'drawingPanel3D'
+      .setProperty("CameraFocusY",0.0) // EJsS HtmlView.HtmlView Page: setting property 'CameraFocusY' for element 'drawingPanel3D'
+      .setProperty("MaximumZ",1.8) // EJsS HtmlView.HtmlView Page: setting property 'MaximumZ' for element 'drawingPanel3D'
+      .setProperty("CameraFocusX",0.0) // EJsS HtmlView.HtmlView Page: setting property 'CameraFocusX' for element 'drawingPanel3D'
+      .setProperty("MaximumY",1.8) // EJsS HtmlView.HtmlView Page: setting property 'MaximumY' for element 'drawingPanel3D'
+      .setProperty("MaximumX",1.8) // EJsS HtmlView.HtmlView Page: setting property 'MaximumX' for element 'drawingPanel3D'
+      .setProperty("MinimumX",-1.8) // EJsS HtmlView.HtmlView Page: setting property 'MinimumX' for element 'drawingPanel3D'
+      .setProperty("MinimumY",-1.8) // EJsS HtmlView.HtmlView Page: setting property 'MinimumY' for element 'drawingPanel3D'
+      .setProperty("MinimumZ",-1.8) // EJsS HtmlView.HtmlView Page: setting property 'MinimumZ' for element 'drawingPanel3D'
+      .setProperty("Lights",99) // EJsS HtmlView.HtmlView Page: setting property 'Lights' for element 'drawingPanel3D'
+      .setProperty("DecorationType","NONE") // EJsS HtmlView.HtmlView Page: setting property 'DecorationType' for element 'drawingPanel3D'
+      ;
+
+    _view._addElement(EJSS_DRAWING3D.sphere,"sphere3D", _view.drawingPanel3D) // EJsS HtmlView.HtmlView Page: declaration of element 'sphere3D'
+      .setProperty("FillColor","Orange") // EJsS HtmlView.HtmlView Page: setting property 'FillColor' for element 'sphere3D'
+      .setProperty("X",0) // EJsS HtmlView.HtmlView Page: setting property 'X' for element 'sphere3D'
+      .setProperty("LineColor","Orange") // EJsS HtmlView.HtmlView Page: setting property 'LineColor' for element 'sphere3D'
+      .setProperty("Y",0) // EJsS HtmlView.HtmlView Page: setting property 'Y' for element 'sphere3D'
+      .setProperty("Z",0) // EJsS HtmlView.HtmlView Page: setting property 'Z' for element 'sphere3D'
+      .setProperty("DrawLines",false) // EJsS HtmlView.HtmlView Page: setting property 'DrawLines' for element 'sphere3D'
+      .setProperty("DrawFill",true) // EJsS HtmlView.HtmlView Page: setting property 'DrawFill' for element 'sphere3D'
+      .setProperty("Resolution",60,60,60) // EJsS HtmlView.HtmlView Page: setting property 'Resolution' for element 'sphere3D'
+      ;
+
+    _view._addElement(EJSS_DRAWING3D.sphere,"exoplanet3D", _view.drawingPanel3D) // EJsS HtmlView.HtmlView Page: declaration of element 'exoplanet3D'
+      .setProperty("FillColor","Red") // EJsS HtmlView.HtmlView Page: setting property 'FillColor' for element 'exoplanet3D'
+      .setProperty("MinAngleU",0) // EJsS HtmlView.HtmlView Page: setting property 'MinAngleU' for element 'exoplanet3D'
+      .setProperty("MaxAngleU",180) // EJsS HtmlView.HtmlView Page: setting property 'MaxAngleU' for element 'exoplanet3D'
+      .setProperty("Visibility",true) // EJsS HtmlView.HtmlView Page: setting property 'Visibility' for element 'exoplanet3D'
+      .setProperty("DrawLines",false) // EJsS HtmlView.HtmlView Page: setting property 'DrawLines' for element 'exoplanet3D'
+      .setProperty("DrawFill",true) // EJsS HtmlView.HtmlView Page: setting property 'DrawFill' for element 'exoplanet3D'
+      .setProperty("Resolution",60,60,60) // EJsS HtmlView.HtmlView Page: setting property 'Resolution' for element 'exoplanet3D'
+      ;
+
+    _view._addElement(EJSS_DRAWING3D.sphere,"exoplanetNight", _view.drawingPanel3D) // EJsS HtmlView.HtmlView Page: declaration of element 'exoplanetNight'
+      .setProperty("FillColor","DarkGray") // EJsS HtmlView.HtmlView Page: setting property 'FillColor' for element 'exoplanetNight'
+      .setProperty("MinAngleU",0) // EJsS HtmlView.HtmlView Page: setting property 'MinAngleU' for element 'exoplanetNight'
+      .setProperty("MaxAngleU",180) // EJsS HtmlView.HtmlView Page: setting property 'MaxAngleU' for element 'exoplanetNight'
+      .setProperty("Visibility",true) // EJsS HtmlView.HtmlView Page: setting property 'Visibility' for element 'exoplanetNight'
+      .setProperty("DrawLines",false) // EJsS HtmlView.HtmlView Page: setting property 'DrawLines' for element 'exoplanetNight'
+      .setProperty("DrawFill",true) // EJsS HtmlView.HtmlView Page: setting property 'DrawFill' for element 'exoplanetNight'
+      .setProperty("Resolution",60,60,60) // EJsS HtmlView.HtmlView Page: setting property 'Resolution' for element 'exoplanetNight'
+      ;
+
+    _view._addElement(EJSS_DRAWING3D.trail,"trail3D", _view.drawingPanel3D) // EJsS HtmlView.HtmlView Page: declaration of element 'trail3D'
+      .setProperty("Maximum",1050) // EJsS HtmlView.HtmlView Page: setting property 'Maximum' for element 'trail3D'
+      .setProperty("Connected",true) // EJsS HtmlView.HtmlView Page: setting property 'Connected' for element 'trail3D'
+      .setProperty("LineColor","White") // EJsS HtmlView.HtmlView Page: setting property 'LineColor' for element 'trail3D'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.panel,"controlPanel", _view.wrappedPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'controlPanel'
+      .setProperty("Width",398) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'controlPanel'
+      .setProperty("CSS",{"display":"block"}) // EJsS HtmlView.HtmlView Page: setting property 'CSS' for element 'controlPanel'
+      .setProperty("Background","Gray") // EJsS HtmlView.HtmlView Page: setting property 'Background' for element 'controlPanel'
+      .setProperty("BorderStyle","solid") // EJsS HtmlView.HtmlView Page: setting property 'BorderStyle' for element 'controlPanel'
+      .setProperty("BoxShadow","1") // EJsS HtmlView.HtmlView Page: setting property 'BoxShadow' for element 'controlPanel'
+      .setProperty("BorderColor","DarkGray") // EJsS HtmlView.HtmlView Page: setting property 'BorderColor' for element 'controlPanel'
+      .setProperty("BorderWidth",1) // EJsS HtmlView.HtmlView Page: setting property 'BorderWidth' for element 'controlPanel'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.panel,"firstRowPanel", _view.controlPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'firstRowPanel'
+      .setProperty("BorderStyle","solid") // EJsS HtmlView.HtmlView Page: setting property 'BorderStyle' for element 'firstRowPanel'
+      .setProperty("BorderColor","DarkGray") // EJsS HtmlView.HtmlView Page: setting property 'BorderColor' for element 'firstRowPanel'
+      .setProperty("BorderWidth",1) // EJsS HtmlView.HtmlView Page: setting property 'BorderWidth' for element 'firstRowPanel'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.twoStateButton,"runPauseButton", _view.firstRowPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'runPauseButton'
+      .setProperty("Tooltip","Play/Pause") // EJsS HtmlView.HtmlView Page: setting property 'Tooltip' for element 'runPauseButton'
+      .setProperty("ImageOnUrl","/org/opensourcephysics/resources/controls/images/play.gif") // EJsS HtmlView.HtmlView Page: setting property 'ImageOnUrl' for element 'runPauseButton'
+      .setProperty("ImageOffUrl","/org/opensourcephysics/resources/controls/images/pause.gif") // EJsS HtmlView.HtmlView Page: setting property 'ImageOffUrl' for element 'runPauseButton'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.button,"stepButton", _view.firstRowPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'stepButton'
+      .setProperty("Tooltip","Step") // EJsS HtmlView.HtmlView Page: setting property 'Tooltip' for element 'stepButton'
+      .setProperty("ImageUrl","/org/opensourcephysics/resources/controls/images/stepforward.gif") // EJsS HtmlView.HtmlView Page: setting property 'ImageUrl' for element 'stepButton'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.button,"resetButton", _view.firstRowPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'resetButton'
+      .setProperty("Tooltip","Reset") // EJsS HtmlView.HtmlView Page: setting property 'Tooltip' for element 'resetButton'
+      .setProperty("ImageUrl","/org/opensourcephysics/resources/controls/images/reset.gif") // EJsS HtmlView.HtmlView Page: setting property 'ImageUrl' for element 'resetButton'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.button,"resetTraces", _view.firstRowPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'resetTraces'
+      .setProperty("Tooltip","Clear all traces in all frames.") // EJsS HtmlView.HtmlView Page: setting property 'Tooltip' for element 'resetTraces'
+      .setProperty("Text","Clear") // EJsS HtmlView.HtmlView Page: setting property 'Text' for element 'resetTraces'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.panel,"panel4", _view.controlPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'panel4'
+      .setProperty("BorderStyle","solid") // EJsS HtmlView.HtmlView Page: setting property 'BorderStyle' for element 'panel4'
+      .setProperty("BorderColor","DarkGray") // EJsS HtmlView.HtmlView Page: setting property 'BorderColor' for element 'panel4'
+      .setProperty("BorderWidth",1) // EJsS HtmlView.HtmlView Page: setting property 'BorderWidth' for element 'panel4'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.imageAndTextButton,"RstarLabel", _view.panel4) // EJsS HtmlView.HtmlView Page: declaration of element 'RstarLabel'
+      .setProperty("Foreground","White") // EJsS HtmlView.HtmlView Page: setting property 'Foreground' for element 'RstarLabel'
+      .setProperty("Text","R_star/R_Sun") // EJsS HtmlView.HtmlView Page: setting property 'Text' for element 'RstarLabel'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.slider,"RstarSlider", _view.panel4) // EJsS HtmlView.HtmlView Page: declaration of element 'RstarSlider'
+      .setProperty("Width",110) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'RstarSlider'
+      .setProperty("Minimum",0.5) // EJsS HtmlView.HtmlView Page: setting property 'Minimum' for element 'RstarSlider'
+      .setProperty("Maximum",2.0) // EJsS HtmlView.HtmlView Page: setting property 'Maximum' for element 'RstarSlider'
+      .setProperty("Tooltip","Slide to change radius of star in terms of radius of Sun.") // EJsS HtmlView.HtmlView Page: setting property 'Tooltip' for element 'RstarSlider'
+      .setProperty("Step",0.05) // EJsS HtmlView.HtmlView Page: setting property 'Step' for element 'RstarSlider'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.imageAndTextButton,"label3", _view.panel4) // EJsS HtmlView.HtmlView Page: declaration of element 'label3'
+      .setProperty("Text","  ") // EJsS HtmlView.HtmlView Page: setting property 'Text' for element 'label3'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.numberField,"RstarField", _view.panel4) // EJsS HtmlView.HtmlView Page: declaration of element 'RstarField'
+      .setProperty("Width",45) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'RstarField'
+      .setProperty("Format","0.00") // EJsS HtmlView.HtmlView Page: setting property 'Format' for element 'RstarField'
+      .setProperty("Editable",false) // EJsS HtmlView.HtmlView Page: setting property 'Editable' for element 'RstarField'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.panel,"panel2", _view.controlPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'panel2'
+      .setProperty("BorderStyle","solid") // EJsS HtmlView.HtmlView Page: setting property 'BorderStyle' for element 'panel2'
+      .setProperty("BorderColor","DarkGray") // EJsS HtmlView.HtmlView Page: setting property 'BorderColor' for element 'panel2'
+      .setProperty("BorderWidth",1) // EJsS HtmlView.HtmlView Page: setting property 'BorderWidth' for element 'panel2'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.imageAndTextButton,"RplanetLabel", _view.panel2) // EJsS HtmlView.HtmlView Page: declaration of element 'RplanetLabel'
+      .setProperty("Foreground","White") // EJsS HtmlView.HtmlView Page: setting property 'Foreground' for element 'RplanetLabel'
+      .setProperty("Text","R_exo/R_jupiter  ") // EJsS HtmlView.HtmlView Page: setting property 'Text' for element 'RplanetLabel'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.slider,"RplanetSlider", _view.panel2) // EJsS HtmlView.HtmlView Page: declaration of element 'RplanetSlider'
+      .setProperty("Width",120) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'RplanetSlider'
+      .setProperty("Minimum",0.1) // EJsS HtmlView.HtmlView Page: setting property 'Minimum' for element 'RplanetSlider'
+      .setProperty("Maximum",2.0) // EJsS HtmlView.HtmlView Page: setting property 'Maximum' for element 'RplanetSlider'
+      .setProperty("ShowText",false) // EJsS HtmlView.HtmlView Page: setting property 'ShowText' for element 'RplanetSlider'
+      .setProperty("Tooltip","Slide to change radius of star in terms of radius of the exoplanet.") // EJsS HtmlView.HtmlView Page: setting property 'Tooltip' for element 'RplanetSlider'
+      .setProperty("Step",0.1) // EJsS HtmlView.HtmlView Page: setting property 'Step' for element 'RplanetSlider'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.imageAndTextButton,"label2", _view.panel2) // EJsS HtmlView.HtmlView Page: declaration of element 'label2'
+      .setProperty("Text","  ") // EJsS HtmlView.HtmlView Page: setting property 'Text' for element 'label2'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.numberField,"RplanetField", _view.panel2) // EJsS HtmlView.HtmlView Page: declaration of element 'RplanetField'
+      .setProperty("Width",45) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'RplanetField'
+      .setProperty("Format","0.00") // EJsS HtmlView.HtmlView Page: setting property 'Format' for element 'RplanetField'
+      .setProperty("Editable",false) // EJsS HtmlView.HtmlView Page: setting property 'Editable' for element 'RplanetField'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.panel,"panel12", _view.controlPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'panel12'
+      .setProperty("BorderStyle","solid") // EJsS HtmlView.HtmlView Page: setting property 'BorderStyle' for element 'panel12'
+      .setProperty("BorderColor","Gray") // EJsS HtmlView.HtmlView Page: setting property 'BorderColor' for element 'panel12'
+      .setProperty("BorderWidth",1) // EJsS HtmlView.HtmlView Page: setting property 'BorderWidth' for element 'panel12'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.imageAndTextButton,"albedoLabel2", _view.panel12) // EJsS HtmlView.HtmlView Page: declaration of element 'albedoLabel2'
+      .setProperty("Foreground","White") // EJsS HtmlView.HtmlView Page: setting property 'Foreground' for element 'albedoLabel2'
+      .setProperty("Text","albedo  ") // EJsS HtmlView.HtmlView Page: setting property 'Text' for element 'albedoLabel2'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.slider,"albedo", _view.panel12) // EJsS HtmlView.HtmlView Page: declaration of element 'albedo'
+      .setProperty("Width",120) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'albedo'
+      .setProperty("Minimum",0) // EJsS HtmlView.HtmlView Page: setting property 'Minimum' for element 'albedo'
+      .setProperty("Maximum",1) // EJsS HtmlView.HtmlView Page: setting property 'Maximum' for element 'albedo'
+      .setProperty("Tooltip","Slide to change the tilt of the albedo of the planet") // EJsS HtmlView.HtmlView Page: setting property 'Tooltip' for element 'albedo'
+      .setProperty("Step",0.01) // EJsS HtmlView.HtmlView Page: setting property 'Step' for element 'albedo'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.imageAndTextButton,"label52", _view.panel12) // EJsS HtmlView.HtmlView Page: declaration of element 'label52'
+      .setProperty("Text","  ") // EJsS HtmlView.HtmlView Page: setting property 'Text' for element 'label52'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.numberField,"albedoField2", _view.panel12) // EJsS HtmlView.HtmlView Page: declaration of element 'albedoField2'
+      .setProperty("Width",40) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'albedoField2'
+      .setProperty("Format","0.0") // EJsS HtmlView.HtmlView Page: setting property 'Format' for element 'albedoField2'
+      .setProperty("Editable",false) // EJsS HtmlView.HtmlView Page: setting property 'Editable' for element 'albedoField2'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.panel,"panel5", _view.controlPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'panel5'
+      .setProperty("BorderStyle","solid") // EJsS HtmlView.HtmlView Page: setting property 'BorderStyle' for element 'panel5'
+      .setProperty("BorderColor","DarkGray") // EJsS HtmlView.HtmlView Page: setting property 'BorderColor' for element 'panel5'
+      .setProperty("BorderWidth",1) // EJsS HtmlView.HtmlView Page: setting property 'BorderWidth' for element 'panel5'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.imageAndTextButton,"semiMajorLabel", _view.panel5) // EJsS HtmlView.HtmlView Page: declaration of element 'semiMajorLabel'
+      .setProperty("Foreground","White") // EJsS HtmlView.HtmlView Page: setting property 'Foreground' for element 'semiMajorLabel'
+      .setProperty("Text","semi-major axis  ") // EJsS HtmlView.HtmlView Page: setting property 'Text' for element 'semiMajorLabel'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.slider,"semiMajor", _view.panel5) // EJsS HtmlView.HtmlView Page: declaration of element 'semiMajor'
+      .setProperty("Width",120) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'semiMajor'
+      .setProperty("Minimum",0.015) // EJsS HtmlView.HtmlView Page: setting property 'Minimum' for element 'semiMajor'
+      .setProperty("Maximum",0.5) // EJsS HtmlView.HtmlView Page: setting property 'Maximum' for element 'semiMajor'
+      .setProperty("Step",0.005) // EJsS HtmlView.HtmlView Page: setting property 'Step' for element 'semiMajor'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.imageAndTextButton,"label4", _view.panel5) // EJsS HtmlView.HtmlView Page: declaration of element 'label4'
+      .setProperty("Text","  ") // EJsS HtmlView.HtmlView Page: setting property 'Text' for element 'label4'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.numberField,"semiMajorField", _view.panel5) // EJsS HtmlView.HtmlView Page: declaration of element 'semiMajorField'
+      .setProperty("Width",50) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'semiMajorField'
+      .setProperty("Format","0.000") // EJsS HtmlView.HtmlView Page: setting property 'Format' for element 'semiMajorField'
+      .setProperty("Editable",false) // EJsS HtmlView.HtmlView Page: setting property 'Editable' for element 'semiMajorField'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.panel,"panel1", _view.controlPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'panel1'
+      .setProperty("BorderStyle","solid") // EJsS HtmlView.HtmlView Page: setting property 'BorderStyle' for element 'panel1'
+      .setProperty("BorderColor","Gray") // EJsS HtmlView.HtmlView Page: setting property 'BorderColor' for element 'panel1'
+      .setProperty("BorderWidth",1) // EJsS HtmlView.HtmlView Page: setting property 'BorderWidth' for element 'panel1'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.imageAndTextButton,"angleLabel", _view.panel1) // EJsS HtmlView.HtmlView Page: declaration of element 'angleLabel'
+      .setProperty("Foreground","White") // EJsS HtmlView.HtmlView Page: setting property 'Foreground' for element 'angleLabel'
+      .setProperty("Text","tilt (degrees)  ") // EJsS HtmlView.HtmlView Page: setting property 'Text' for element 'angleLabel'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.slider,"angle2", _view.panel1) // EJsS HtmlView.HtmlView Page: declaration of element 'angle2'
+      .setProperty("Width",120) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'angle2'
+      .setProperty("Minimum",0) // EJsS HtmlView.HtmlView Page: setting property 'Minimum' for element 'angle2'
+      .setProperty("Maximum",90) // EJsS HtmlView.HtmlView Page: setting property 'Maximum' for element 'angle2'
+      .setProperty("Tooltip","Slide to change the tilt of the system as seen from Earth") // EJsS HtmlView.HtmlView Page: setting property 'Tooltip' for element 'angle2'
+      .setProperty("Step",1) // EJsS HtmlView.HtmlView Page: setting property 'Step' for element 'angle2'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.imageAndTextButton,"label", _view.panel1) // EJsS HtmlView.HtmlView Page: declaration of element 'label'
+      .setProperty("Text","  ") // EJsS HtmlView.HtmlView Page: setting property 'Text' for element 'label'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.numberField,"angleField", _view.panel1) // EJsS HtmlView.HtmlView Page: declaration of element 'angleField'
+      .setProperty("Width",40) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'angleField'
+      .setProperty("Format","0.0") // EJsS HtmlView.HtmlView Page: setting property 'Format' for element 'angleField'
+      .setProperty("Editable",false) // EJsS HtmlView.HtmlView Page: setting property 'Editable' for element 'angleField'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.wrappedPanel,"wrappedPanel2", _view.wrappedPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'wrappedPanel2'
+      .setProperty("CSS",{ "display":"block"}) // EJsS HtmlView.HtmlView Page: setting property 'CSS' for element 'wrappedPanel2'
+      ;
+
+    _view._addElement(EJSS_DRAWING2D.plottingPanel,"plottingPanel", _view.wrappedPanel2) // EJsS HtmlView.HtmlView Page: declaration of element 'plottingPanel'
+      .setProperty("Height",300) // EJsS HtmlView.HtmlView Page: setting property 'Height' for element 'plottingPanel'
+      .setProperty("Width",400) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'plottingPanel'
+      .setProperty("ShowCoordinates",true) // EJsS HtmlView.HtmlView Page: setting property 'ShowCoordinates' for element 'plottingPanel'
+      .setProperty("MinimumY",0.8) // EJsS HtmlView.HtmlView Page: setting property 'MinimumY' for element 'plottingPanel'
+      .setProperty("TitleY","Intensity (abitrary units)") // EJsS HtmlView.HtmlView Page: setting property 'TitleY' for element 'plottingPanel'
+      .setProperty("AutoScaleY",false) // EJsS HtmlView.HtmlView Page: setting property 'AutoScaleY' for element 'plottingPanel'
+      .setProperty("TitleX","Time (days)") // EJsS HtmlView.HtmlView Page: setting property 'TitleX' for element 'plottingPanel'
+      .setProperty("AutoScaleX",true) // EJsS HtmlView.HtmlView Page: setting property 'AutoScaleX' for element 'plottingPanel'
+      .setProperty("YStep",1) // EJsS HtmlView.HtmlView Page: setting property 'YStep' for element 'plottingPanel'
+      .setProperty("Title","Intensity vs. Time") // EJsS HtmlView.HtmlView Page: setting property 'Title' for element 'plottingPanel'
+      .setProperty("CoordinatesFormat","0.00") // EJsS HtmlView.HtmlView Page: setting property 'CoordinatesFormat' for element 'plottingPanel'
+      .setProperty("YScalePrecision",2)
+      .setProperty("MaximumY",1.05) // EJsS HtmlView.HtmlView Page: setting property 'MaximumY' for element 'plottingPanel'
+      ;
+
+    _view._addElement(EJSS_DRAWING2D.trace,"plot", _view.plottingPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'plot'
+      .setProperty("Maximum",2000) // EJsS HtmlView.HtmlView Page: setting property 'Maximum' for element 'plot'
+      .setProperty("Connected",true) // EJsS HtmlView.HtmlView Page: setting property 'Connected' for element 'plot'
+      .setProperty("LineColor","Black") // EJsS HtmlView.HtmlView Page: setting property 'LineColor' for element 'plot'
+      .setProperty("NoRepeat",true) // EJsS HtmlView.HtmlView Page: setting property 'NoRepeat' for element 'plot'
+      .setProperty("LineWidth",2) // EJsS HtmlView.HtmlView Page: setting property 'LineWidth' for element 'plot'
+      ;
+
+    _view._addElement(EJSS_INTERFACE.panel,"narrativePanel2", _view._topFrame) // EJsS HtmlView.HtmlView Page: declaration of element 'narrativePanel2'
+      .setProperty("Html","<h2>Description</h2> <p>This program simulates the detection of exoplanets by using the transit method. In this method, the light curve from a star, and how it changes over time due to exoplanet transits, is observed and then analyzed. </p> <p>In this simulation the exoplanet orbits the star (sun-sized) in circular motion via Kepler's third law.  When the exoplanet passes in front of the star (transits), it blocks part of the starlight. This decrease in starlight is shown on the graph.  If the exoplanet is close enough to the central star, and has sufficient reflectivity, or albedo, it can reflect enough of the starlight to be seen on the light curve. </p> <p>In the simulation the star-exoplanet system is shown as seen from Earth (edge on view) but magnified greatly, and with the star and planet sizes not shown to the scale of the orbit. The radius of the central star (relative to the radius of Sun),semi-major axis of the exoplanet (in AU), radius of the exoplanet (relative to the radius of Jupiter), the exoplanet's albedo (reflectivity), and the inclination of the system relative to Earth can be changed.</p> <p>Since 1999, over 4,000 exoplanets have been found, with over 2,000 confirmed via the transit method by primarily space-based telescopes such as CoRoT and Kepler. These exoplanets have radii varying from 0.15 to 1.80 RJupiter, semi-major axes varying from 0.015 to 0.5 AU, and orbital periods varying from 1 to 111 days. They also have albedos ranging from 0.10-0.20 (or 10% - 20%). For comparison, Jupiter's albedo is 0.52 (or 52%).</p> <p>This simulation is part of a sequence of simulations used to introduce students to the detection of exoplanets. Additional simulations can be found on the OSP ComPADRE site.</p>") // EJsS HtmlView.HtmlView Page: setting property 'Html' for element 'narrativePanel2'
+      ;
+
+  };
+
+  return _view;
+}
+
+
+//--><!]]></script>
+  </head>
+  <body>
+    <div role="button" id="_topFrame" style="text-align:center"></div>
+  <div id="metadata" class="metadata">
+    <br />
+    <div id="title_author">
+      <hr />
+      <b>Title and author:</b>
+      <p>
+      </p>
+      <p>
+ Mario Belloni - Davidson College
+      </p>
+    </div>
+    <hr />
+    <p></p>
+    <div id="copyright_message">
+      <div class="cc_left"  style="float:left">&#169; 2019, Mario Belloni - Davidson College. Compiled with EJS 6.0_beta (180819)
+</div>
+      <div class="cc_right" style="float:right">    Released under a <a rel="license" target="_blank" href="http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en_US"> <img alt="Creative Commons Attribution-NonCommercial-ShareAlike" src="_ejs_library/images/cc_icon.png" /> </a> license.</div>
+    </div>
+  </div>
+    <script type="text/javascript"><!--//--><![CDATA[//><!--
+      var _model;
+      var _scorm;
+      window.addEventListener('load',
+        function () { 
+          _model =  new exoplanet_transits("_topFrame","_ejs_library/",null);
+          if (typeof _isApp !== "undefined" && _isApp) _model.setRunAlways(true);
+          TextResizeDetector.TARGET_ELEMENT_ID = '_topFrame';
+          TextResizeDetector.USER_INIT_FUNC = function () {
+            var iBase = TextResizeDetector.addEventListener(function(e,args) {
+              _model._fontResized(args[0].iBase,args[0].iSize,args[0].iDelta);
+              },null);
+            _model._fontResized(iBase);
+          };
+          _model.onload();
+        }, false);
+    //--><!]]></script>
+  </body>
+</html>
